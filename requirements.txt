@@ -1,0 +1,17 @@
+# Video downloading and processing
+yt-dlp                # YouTube video downloader
+moviepy              # Video editing and subtitle embedding
+ffmpeg-python        # FFmpeg wrapper for video processing
+
+# Audio transcription and processing
+faster-whisper       # Fast speech-to-text transcription
+pydub               # Audio manipulation and processing
+
+# Text-to-speech generation
+gtts                # Google Text-to-Speech for Chinese audio generation
+
+# Text processing and translation
+srt                 # Subtitle file format handling
+ollama              # Local LLM integration (optional)
+openai              # OpenAI API integration (optional)
+requests            # HTTP requests for API calls
