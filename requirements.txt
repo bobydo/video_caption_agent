@@ -1,11 +1,13 @@
 # Video downloading and processing
-yt-dlp                # YouTube video downloader
+yt-dlp               # YouTube video downloader
 moviepy              # Video editing and subtitle embedding
 ffmpeg-python        # FFmpeg wrapper for video processing
+opencv-python        # Computer vision and image processing (cv2)
+easyocr              # Optical Character Recognition for text extraction
 
 # Audio transcription and processing
 faster-whisper       # Fast speech-to-text transcription
-pydub               # Audio manipulation and processing
+pydub                # Audio manipulation and processing
 
 # Text-to-speech generation
 gtts                # Google Text-to-Speech for Chinese audio generation

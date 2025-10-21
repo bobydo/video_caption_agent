@@ -15,10 +15,10 @@ import sys
 import importlib.util
 from pathlib import Path
 
-# Helper function to load modules from D:\video-agent\utils
+# Helper function to load modules from utils directory
 def load_utils_module(module_name):
-    r"""Load a module from D:\video-agent\utils"""
-    utils_path = Path(__file__).parent.parent / "utils" / f"{module_name}.py"
+    r"""Load a module from the utils directory"""
+    utils_path = Path(__file__).parent / "utils" / f"{module_name}.py"
     spec = importlib.util.spec_from_file_location(module_name, utils_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Could not load {module_name} from {utils_path}")

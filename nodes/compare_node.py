@@ -64,20 +64,22 @@ class CompareNode(BaseNode):
     
     def _calculate_clarity_score(self, state: GraphState) -> float:
         """Calculate clarity score based on OCR confidence"""
+        if not state.target_metrics or not state.current_metrics:
+            return 0
         target_conf = state.target_metrics['avg_confidence']
         current_conf = state.current_metrics['avg_confidence']
         clarity_diff = abs(target_conf - current_conf)
-        return max(0, 100 - (clarity_diff * 100))
-    
     def _calculate_position_score(self, state: GraphState) -> float:
         """Calculate position score based on vertical placement"""
+        if not state.target_metrics or not state.current_metrics:
+            return 0
         target_pos = state.target_metrics['avg_y_position']
         current_pos = state.current_metrics['avg_y_position']
         position_diff = abs(target_pos - current_pos)
-        return max(0, 100 - (position_diff * 200))
-    
     def _calculate_size_score(self, state: GraphState) -> float:
         """Calculate size score based on font size"""
+        if not state.target_metrics or not state.current_metrics:
+            return 0
         target_size = state.target_metrics['estimated_font_size']
         current_size = state.current_metrics.get('estimated_font_size', 0)
         
@@ -85,9 +87,16 @@ class CompareNode(BaseNode):
             size_diff = abs(target_size - current_size) / target_size
             return max(0, 100 - (size_diff * 100))
         return 0
+        if current_size > 0:
+            size_diff = abs(target_size - current_size) / target_size
+            return max(0, 100 - (size_diff * 100))
+        return 0
     
     def _get_details(self, state: GraphState) -> dict:
         """Get detailed comparison information"""
+        if not state.target_metrics or not state.current_metrics:
+            return {}
+        
         return {
             'target_conf': state.target_metrics['avg_confidence'],
             'current_conf': state.current_metrics['avg_confidence'],
