@@ -111,6 +111,8 @@ Each node inherits from `BaseNode` and implements:
 ├── chinese_sample.jpg           # Target reference image
 ├── 10_second.mp4               # Source video file
 ├── requirements.txt            # Python dependencies
+├── screenshots                 # Screenshots for verification
+├── output                      # Video with chinese caption
 ├── core/                       # Graph state management
 │   ├── state.py                # GraphState class definition
 │   ├── graph.py                # Node execution graph
