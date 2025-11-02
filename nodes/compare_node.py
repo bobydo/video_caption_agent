@@ -46,9 +46,9 @@ class CompareNode(BaseNode):
         }
         
         # Print scores
-        self.log(f"✅ Clarity Score: {clarity_score:.1f}/100")
-        self.log(f"✅ Position Score: {position_score:.1f}/100")
-        self.log(f"✅ Size Score: {size_score:.1f}/100")
+        self.log(f"Clarity Score: {clarity_score:.1f}/100")
+        self.log(f"Position Score: {position_score:.1f}/100")
+        self.log(f"Size Score: {size_score:.1f}/100")
         self.log(f"🎯 Overall Score: {overall_score:.1f}/100")
         
         # Store iteration result
@@ -69,6 +69,9 @@ class CompareNode(BaseNode):
         target_conf = state.target_metrics['avg_confidence']
         current_conf = state.current_metrics['avg_confidence']
         clarity_diff = abs(target_conf - current_conf)
+        # Convert difference to score (smaller diff = higher score)
+        return max(0, 100 - (clarity_diff * 100))
+    
     def _calculate_position_score(self, state: GraphState) -> float:
         """Calculate position score based on vertical placement"""
         if not state.target_metrics or not state.current_metrics:
@@ -76,6 +79,10 @@ class CompareNode(BaseNode):
         target_pos = state.target_metrics['avg_y_position']
         current_pos = state.current_metrics['avg_y_position']
         position_diff = abs(target_pos - current_pos)
+        # Normalize by image height (assuming ~800px typical height)
+        normalized_diff = position_diff / 800.0
+        return max(0, 100 - (normalized_diff * 100))
+    
     def _calculate_size_score(self, state: GraphState) -> float:
         """Calculate size score based on font size"""
         if not state.target_metrics or not state.current_metrics:
@@ -83,10 +90,6 @@ class CompareNode(BaseNode):
         target_size = state.target_metrics['estimated_font_size']
         current_size = state.current_metrics.get('estimated_font_size', 0)
         
-        if current_size > 0:
-            size_diff = abs(target_size - current_size) / target_size
-            return max(0, 100 - (size_diff * 100))
-        return 0
         if current_size > 0:
             size_diff = abs(target_size - current_size) / target_size
             return max(0, 100 - (size_diff * 100))

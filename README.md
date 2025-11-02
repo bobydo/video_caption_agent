@@ -1,8 +1,8 @@
-# 🤖 AI Agent: Graph-Based Subtitle Improvement
+# AI Agent: Graph-Based Subtitle Improvement
 
 An intelligent video subtitle optimization system that automatically generates Chinese subtitles and tunes font size and position to match a reference image (`chinese_sample.jpg`) using a graph-based node architecture.
 
-## 🎯 **Purpose**
+## Purpose
 
 This application fine-tunes Chinese subtitle appearance by:
 - **Font Size Optimization**: Automatically adjusts subtitle font size to match target reference
@@ -11,7 +11,7 @@ This application fine-tunes Chinese subtitle appearance by:
 
 The system uses `chinese_sample.jpg` as the target reference to optimize subtitle rendering parameters through iterative improvement cycles.
 
-## 🚀 **Quick Start**
+## Quick Start
 
 ```bash
 # Install dependencies
@@ -26,25 +26,25 @@ python auto_improve_subtitles.py
 - Input files: `chinese_sample.jpg` (reference) and `10_second.mp4` (video source)
 - Python 3.8+ with required packages
 
-## ⚙️ **Configuration (config.py)**
+## Configuration (config.py)
 
 The main tuning parameters are defined in `config.py`:
 
-### **Core Parameters**
+### Core Parameters
 ```python
 max_iterations: int = 1              # Maximum optimization cycles
 similarity: float = 95.0             # Score threshold to stop early (0-100%)
 initial_font_scale: float = 0.25     # Starting font size (25% of detected size)
 ```
 
-### **Parameter Ranges**
+### Parameter Ranges
 ```python
 font_size_range: [20, 24, 28, 32, 36, 40, 44, 48]     # Font sizes to test
 stroke_width_range: [1, 2, 3]                          # Stroke widths to try
 position_range: [0.60, 0.63, 0.65, 0.67, 0.70]       # Vertical positions (0-1)
 ```
 
-### **Scoring Weights**
+### Scoring Weights
 ```python
 comparison_weights: {
     'clarity': 0.4,      # 40% weight on OCR confidence
@@ -53,11 +53,34 @@ comparison_weights: {
 }
 ```
 
-## 🏗️ **Node-Based Architecture**
+## Process Flow
 
-The application uses a single-agent pipeline with specialized nodes:
+### Main Script Process (`auto_improve_subtitles.py`)
 
-### **Core Process Flow**
+```
+START → File Validation → Config Setup → Audio Processing → Translation → Agent Execution
+   ↓           ↓             ↓              ↓              ↓               ↓
+Paths     Check Files   Load Config   Whisper STT   English→Chinese   Graph Resolver
+Setup      Exist        Validate      Timestamps    Each Segment      Execute Nodes
+   ↓           ↓             ↓              ↓              ↓               ↓
+Target:    chinese       AgentConfig   Extract       translate_        SubtitleResolver
+Output     sample.jpg    from config   audio with    tools.py for      Creates & executes:
+Screenshots 10_second.mp4    .py        timestamps    each subtitle     - analyze_target
+   ↓           ↓             ↓              ↓         segment text      - generate_video  
+   ↓      Missing?       Valid          List of       Chinese text     - take_screenshot
+   ↓        → EXIT       Parameters     segments      replaces original - analyze_current
+   ↓                        ↓              ↓              ↓            - compare
+   ↓                    Ready for      Ready for      Ready for        - adjust_parameters
+   ↓                    Processing     Translation    Agent                   ↓
+   ↓                        ↓              ↓              ↓            Final Results
+   └────────────────────────┴──────────────┴──────────────┴──────────────────┘
+                                                                              ↓
+                                                                       Save Results
+                                                                       Print Summary
+                                                                       Complete
+```
+
+### Core AI Agent Process Flow
 ```
 START → Analyze Target → Generate Video → Take Screenshot 
            ↓                                    ↓
@@ -65,11 +88,11 @@ START → Analyze Target → Generate Video → Take Screenshot
            ↓                                    ↓
      Font Properties                      Compare Metrics
                                                ↓
-                                    ┌─── Score ≥ 95% or No Chinese found  → STOP
+                                    ┌─── Score ≥ 95% or No Chinese found  or max_iterations met → STOP
                                     └─── Else → Adjust Parameters → LOOP
 ```
 
-### **Node Structure**
+### Node Structure
 ```
 nodes/
 ├── base_node.py              # Abstract base class for all nodes
@@ -86,11 +109,11 @@ Each node inherits from `BaseNode` and implements:
 - Input/output state management
 - Error handling and logging
 
-## 📁 **Directory Structure**
+## Directory Structure
 
-### **Output Folders**
+### Output Folders
 
-#### **`output/` Directory**
+#### `output/` Directory
 - **`10_second_1.mp4`**, **`10_second_2.mp4`**, etc. - Generated videos for each iteration
 - **`iteration_results.json`** - Complete results data including:
   - Parameter configurations tested
@@ -98,13 +121,13 @@ Each node inherits from `BaseNode` and implements:
   - Best performing parameters
   - Execution timestamps and performance data
 
-#### **`screenshots/` Directory** 
+#### `screenshots/` Directory 
 - **`iteration_1_screenshot.png`**, **`iteration_2_screenshot.png`**, etc.
 - Screenshots captured from each generated video for OCR analysis
 - Used for comparing current results with target reference image
 - Helps visualize subtitle positioning and clarity improvements
 
-### **Core Files**
+### Core Files
 ```
 ├── auto_improve_subtitles.py    # Main execution script
 ├── config.py                    # All configuration parameters
@@ -124,9 +147,14 @@ Each node inherits from `BaseNode` and implements:
     └── translate_tools.py      # Text translation
 ```
 
-## 🔄 **Process Loop**
+**Key Steps:**
+1. **Setup Phase**: Validate paths, check required files exist
+2. **Audio Phase**: `whisper_tools.transcribe_with_timestamps()` → English segments with timing
+3. **Translation Phase**: `translate_tools.translate_text()` → Convert each segment to Chinese
+4. **Agent Phase**: `SubtitleResolver.resolve()` → Execute graph-based optimization
+5. **Output Phase**: Save iteration results and print final summary
 
-### **Basic Workflow**
+### AI Agent Workflow (Graph-Based Optimization)
 1. **Audio Processing**: Extract and transcribe audio using Whisper
 2. **Translation**: Convert English text to Chinese using Ollama LLM
 3. **Target Analysis**: Analyze `chinese_sample.jpg` to extract reference metrics
@@ -139,13 +167,13 @@ Each node inherits from `BaseNode` and implements:
    - If score < threshold: adjust parameters and repeat
    - If score ≥ threshold or max iterations reached: stop
 
-### **Scoring System**
+### Scoring System
 - **Clarity Score**: Based on OCR confidence of Chinese text recognition
 - **Position Score**: Vertical position match with reference image
 - **Size Score**: Font size similarity to target reference
 - **Overall Score**: Weighted combination (configurable in `config.py`)
 
-## 🛑 **Stop Conditions**
+## Stop Conditions
 
 The optimization loop terminates when:
 1. **Success Threshold Reached**: Score ≥ configured threshold (default: 95%)
@@ -153,9 +181,9 @@ The optimization loop terminates when:
 3. **No Chinese Text**: OCR fails to detect Chinese characters in result
 4. **Critical Error**: File I/O errors or processing failures
 
-## 🔧 **Technical Details**
+## Technical Details
 
-### **Dependencies**
+### Dependencies
 - **faster-whisper**: Audio transcription
 - **easyocr**: Optical character recognition
 - **opencv-python**: Image processing
@@ -163,12 +191,12 @@ The optimization loop terminates when:
 - **ollama**: Local LLM integration
 - **requests**: API communication
 
-### **Supported Formats**
+### Supported Formats
 - **Input Video**: MP4, AVI, MOV (any format supported by moviepy)
 - **Reference Image**: JPG, PNG (processed by EasyOCR)
 - **Output Video**: MP4 with embedded subtitles
 
-### **Future Enhancements**
+### Future Enhancements
 The current implementation is a single-agent pipeline. Future versions may implement:
 - **Multi-Agent Architecture**: Using LangGraph message-based state management
 - **Parallel Parameter Testing**: Concurrent optimization paths
