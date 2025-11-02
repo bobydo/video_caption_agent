@@ -33,8 +33,8 @@ The main tuning parameters are defined in `config.py`:
 ### **Core Parameters**
 ```python
 max_iterations: int = 1              # Maximum optimization cycles
-success_threshold: float = 95.0      # Score threshold to stop early (0-100%)
-initial_font_scale: float = 0.35     # Starting font size (35% of detected size)
+similarity: float = 95.0             # Score threshold to stop early (0-100%)
+initial_font_scale: float = 0.25     # Starting font size (25% of detected size)
 ```
 
 ### **Parameter Ranges**

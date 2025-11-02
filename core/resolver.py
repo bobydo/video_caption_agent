@@ -49,7 +49,7 @@ class SubtitleResolver:
         print(f"{'='*60}")
         print(f"Configuration:")
         print(f"  - Max Iterations: {self.config.max_iterations}")
-        print(f"  - Success Threshold: {self.config.success_threshold}%")
+        print(f"  - Similarity: {self.config.similarity}%")
         print(f"  - Weights: {self.config.comparison_weights}")
         
         try:
@@ -86,7 +86,7 @@ class SubtitleResolver:
                 # Check stop conditions via edges
                 if EdgeConditions.should_stop_success(self.state, self.config):
                     score = self.state.comparison_result['overall_score']
-                    self.state.stop_reason = f"Success! Score {score:.1f} >= {self.config.success_threshold}"
+                    self.state.stop_reason = f"Success! Score {score:.1f} >= {self.config.similarity}"
                     print(f"\n🎉 {self.state.stop_reason}")
                     break
                 
@@ -139,7 +139,7 @@ class SubtitleResolver:
             'timestamp': datetime.now().isoformat(),
             'config': {
                 'max_iterations': self.config.max_iterations,
-                'success_threshold': self.config.success_threshold,
+                'similarity': self.config.similarity,
                 'comparison_weights': self.config.comparison_weights
             },
             'target_metrics': convert_to_native(self.state.target_metrics),

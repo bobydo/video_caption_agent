@@ -25,10 +25,10 @@ class EdgeConditions:
     
     @staticmethod
     def should_stop_success(state: GraphState, config: AgentConfig) -> bool:
-        """Check if success threshold reached"""
+        """Check if similarity threshold reached"""
         if state.comparison_result is None:
             return False
-        return state.comparison_result['overall_score'] >= config.success_threshold
+        return state.comparison_result['overall_score'] >= config.similarity
     
     @staticmethod
     def should_stop_max_iterations(state: GraphState, config: AgentConfig) -> bool:

@@ -1,25 +1,23 @@
 import requests
-import json
-
-# Ollama API endpoint
-OLLAMA_URL = "http://localhost:11434/api/generate"
+import re
+from config import DEFAULT_CONFIG
 
 def translate_text(text):
     try:
         # Handle long text by splitting into smaller chunks to avoid timeout
-        MAX_CHUNK_SIZE = 1000  # Process 1000 chars at a time for better reliability
+        MAX_CHUNK_SIZE = DEFAULT_CONFIG.max_chunk_size
         
-        print(f"📝 Total text length: {len(text)} characters")
+        print(f"Total text length: {len(text)} characters")
         
         # If text is short enough, translate directly
         if len(text) <= MAX_CHUNK_SIZE:
             print(f"📝 Text is short, translating directly...")
             return _translate_single_chunk(text)
         
-        # For long text, split by sentences and translate in chunks
-        print(f"📦 Text is long, splitting into chunks...")
-        import re
-        sentences = re.split(r'(?<=[.!?])\s+', text)
+        # For long text, split by sentences using LLM and translate in chunks
+        print(f"Text is long, splitting into sentences using LLM...")
+
+        sentences = _split_text_into_sentences(text)
         
         translated_chunks = []
         current_chunk = ""
@@ -49,28 +47,67 @@ def translate_text(text):
         print(f"⚠️ Translation failed: {e}")
         return _get_fallback_translation(text)
 
+def _split_text_into_sentences(text):
+    """Split text into sentences using LLM for intelligent parsing"""
+    try:
+        split_prompt = DEFAULT_CONFIG.sentence_split_prompt_template.format(text=text)
+        
+        payload = {
+            "model": DEFAULT_CONFIG.translation_model,
+            "prompt": split_prompt,
+            "stream": False,
+            "options": DEFAULT_CONFIG.sentence_split_options
+        }
+        
+        print(f"Using LLM to split text into sentences...")
+        
+        response = requests.post(DEFAULT_CONFIG.ollama_url, json=payload, timeout=60)
+        
+        if response.status_code == 200:
+            result = response.json()
+            split_result = result.get("response", "").strip()
+            
+            # Split by newlines and filter out empty lines
+            sentences = [line.strip() for line in split_result.split('\n') if line.strip()]
+            
+            if sentences and len(sentences) > 0:
+                print(f"✅ LLM split text into {len(sentences)} sentences")
+                return sentences
+            else:
+                print("⚠️ LLM splitting failed, falling back to simple split")
+                return [text]  # Return original text as single sentence
+                
+        else:
+            print(f"⚠️ LLM splitting failed: HTTP {response.status_code}")
+            return [text]  # Fallback to original text
+            
+    except Exception as e:
+        print(f"⚠️ LLM sentence splitting error: {e}")
+        # Fallback to regex sentence splitting
+        sentences = re.split(DEFAULT_CONFIG.sentence_split_fallback_pattern, text)
+        return sentences if sentences else [text]
+
 def _translate_single_chunk(text):
     """Translate a single chunk of text using Ollama"""
     try:
-        prompt = f"Please translate the following English text to Simplified Chinese. " \
-                 f"Only return the Chinese translation, nothing else:\n\n{text}"
+        prompt = DEFAULT_CONFIG.translation_prompt_template.format(
+            source_language=DEFAULT_CONFIG.source_language,
+            target_language=DEFAULT_CONFIG.target_language,
+            instruction=DEFAULT_CONFIG.translation_instruction,
+            text=text
+        )
         
         payload = {
-            "model": "llama3.1:8b",
+            "model": DEFAULT_CONFIG.translation_model,
             "prompt": prompt,
             "stream": False,
-            "options": {
-                "temperature": 0.1,
-                "top_p": 0.9
-            }
+            "options": DEFAULT_CONFIG.translation_options
         }
         
-        print(f"🌐 Calling Ollama API at {OLLAMA_URL}...")
+        print(f"🌐 Calling Ollama API at {DEFAULT_CONFIG.ollama_url}...")
         print(f"📝 Text to translate (first 100 chars): {text[:100]}...")
         
-        response = requests.post(OLLAMA_URL, json=payload, timeout=180)
-        
-        response = requests.post(OLLAMA_URL, json=payload, timeout=180)
+        response = requests.post(DEFAULT_CONFIG.ollama_url, json=payload, timeout=180)
         
         if response.status_code == 200:
             result = response.json()

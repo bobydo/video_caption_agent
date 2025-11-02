@@ -14,6 +14,15 @@ Structure:
 import sys
 import importlib.util
 from pathlib import Path
+from config import AgentConfig
+from utils.ocr_analyzer import OCRAnalyzer
+from nodes.analyze_target_node import AnalyzeTargetNode
+from nodes.generate_video_node import GenerateVideoNode
+from nodes.take_screenshot_node import TakeScreenshotNode
+from nodes.analyze_current_node import AnalyzeCurrentNode
+from nodes.compare_node import CompareNode
+from nodes.adjust_parameters_node import AdjustParametersNode
+from core.resolver import SubtitleResolver
 
 # Helper function to load modules from utils directory
 def load_utils_module(module_name):
@@ -29,17 +38,6 @@ def load_utils_module(module_name):
 # Load whisper and translate tools
 whisper_tools = load_utils_module("whisper_tools")
 translate_tools = load_utils_module("translate_tools")
-
-from config import AgentConfig
-from utils.ocr_analyzer import OCRAnalyzer
-from nodes.analyze_target_node import AnalyzeTargetNode
-from nodes.generate_video_node import GenerateVideoNode
-from nodes.take_screenshot_node import TakeScreenshotNode
-from nodes.analyze_current_node import AnalyzeCurrentNode
-from nodes.compare_node import CompareNode
-from nodes.adjust_parameters_node import AdjustParametersNode
-from core.resolver import SubtitleResolver
-from core.state import GraphState
 
 
 def main():
