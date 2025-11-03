@@ -80,34 +80,70 @@ Screenshots 10_second.mp4    .py        timestamps    each subtitle     - analyz
                                                                        Complete
 ```
 
-### Core AI Agent Process Flow
+### AI Agent Graph Execution (graph-based architecture)
+
 ```
-START → Analyze Target → Generate Video → Take Screenshot 
-           ↓                                    ↓
-     Target Metrics              Analyze Current ← OCR Analysis
-           ↓                                    ↓
-     Font Properties                      Compare Metrics
-                                               ↓
-                                    ┌─── Score ≥ 95% or No Chinese found  or max_iterations met → STOP
-                                    └─── Else → Adjust Parameters → LOOP
+START → Analyze Target → Initialize Parameters → OPTIMIZATION LOOP
+           ↓                        ↓                      ↓
+     Target Metrics           Font Properties      Generate Video
+    (analyze_target_         (resolver.py)        (generate_video_
+     node.py)                                      node.py)
+           ↓                        ↓                      ↓
+     Reference Data          Initial Settings      Take Screenshot
+                                   ↓             (take_screenshot_
+                            ┌─────────────────────node.py)──────────┐
+                            ↓                        ↓              ↓
+                     Analyze Current ← OCR Analysis        Compare Metrics
+                   (analyze_current_   (ocr_analyzer.py)  (compare_node.py)
+                      node.py)                                     ↓
+                            ↓                          EdgeConditions.check()
+                   Current Metrics                         (graph.py)
+                            ↓                                      ↓
+                            └─────────────────────┬────────────────┘
+                                                  ↓
+                        ┌─── should_stop_success() (graph.py) → STOP_SUCCESS
+                        ├─── should_stop_max_iterations() (graph.py) → STOP_MAX_ITERATIONS  
+                        └─── should_continue() (graph.py) → Adjust Parameters → LOOP
+                                                           (adjust_parameters_
+                                                             node.py)
 ```
 
-### Node Structure
-```
-nodes/
-├── base_node.py              # Abstract base class for all nodes
-├── analyze_target_node.py    # Extract metrics from chinese_sample.jpg
-├── generate_video_node.py    # Create video with current parameters
-├── take_screenshot_node.py   # Capture frame from generated video
-├── analyze_current_node.py   # OCR analysis of current screenshot
-├── compare_node.py           # Score comparison with target
-└── adjust_parameters_node.py # Smart parameter optimization
+```python
+# Future multi-agent state structure
+class AgentState(TypedDict):
+    messages: Annotated[list[AnyMessage], add_messages]
 ```
 
-Each node inherits from `BaseNode` and implements:
-- `execute(state)`: Main processing logic
-- Input/output state management
-- Error handling and logging
+**Graph Components (core/):**
+- **GraphState** (state.py): Agent memory containing metrics, parameters, iteration history
+- **EdgeConditions** (graph.py): AI decision logic for stop/continue conditions
+- **SubtitleResolver** (resolver.py): Agent orchestrator that executes the node graph
+- **NodeType** (graph.py): Enumeration of all possible agent actions
+
+### AI Agent Node Architecture
+```
+nodes/                                    # Agent Action Modules
+├── base_node.py                         # Abstract base class for all agent actions
+├── analyze_target_node.py              # PERCEPTION: Extract reference metrics
+├── generate_video_node.py              # ACTION: Create video with parameters  
+├── take_screenshot_node.py             # OBSERVATION: Capture result for analysis
+├── analyze_current_node.py             # PERCEPTION: OCR analysis of current state
+├── compare_node.py                     # REASONING: Score comparison with target
+└── adjust_parameters_node.py           # LEARNING: Optimize parameters for next iteration
+
+core/                                    # Agent Intelligence Framework  
+├── state.py → GraphState               # MEMORY: Agent persistent state & history
+├── graph.py → EdgeConditions           # DECISIONS: Stop/continue logic  
+└── resolver.py → SubtitleResolver      # ORCHESTRATOR: Agent execution engine
+```
+
+**Agent Intelligence Pattern:**
+- **PERCEPTION** nodes gather information (analyze_target, analyze_current)
+- **ACTION** nodes modify the environment (generate_video, take_screenshot)  
+- **REASONING** nodes evaluate performance (compare)
+- **LEARNING** nodes improve behavior (adjust_parameters)
+- **MEMORY** (GraphState) persists all data across iterations
+- **DECISIONS** (EdgeConditions) determine when to stop or continue
 
 ## Directory Structure
 
@@ -130,21 +166,21 @@ Each node inherits from `BaseNode` and implements:
 ### Core Files
 ```
 ├── auto_improve_subtitles.py    # Main execution script
-├── config.py                    # All configuration parameters
+├── config.py                    # Agent configuration parameters
 ├── chinese_sample.jpg           # Target reference image
 ├── 10_second.mp4               # Source video file
 ├── requirements.txt            # Python dependencies
-├── screenshots                 # Screenshots for verification
-├── output                      # Video with chinese caption
-├── core/                       # Graph state management
-│   ├── state.py                # GraphState class definition
-│   ├── graph.py                # Node execution graph
-│   └── resolver.py             # Main execution resolver
-└── utils/                      # Helper utilities
-    ├── ocr_analyzer.py         # EasyOCR integration
-    ├── subtitle_renderer.py    # Video subtitle generation
-    ├── whisper_tools.py        # Audio transcription
-    └── translate_tools.py      # Text translation
+├── screenshots                 # Agent observation data
+├── output                      # Agent output artifacts
+├── core/                       # AI Agent Framework
+│   ├── state.py                # Agent Memory (GraphState)
+│   ├── graph.py                # Agent Decision Logic (EdgeConditions)  
+│   └── resolver.py             # Agent Orchestrator (SubtitleResolver)
+└── utils/                      # Agent Capability Tools
+    ├── ocr_analyzer.py         # Vision capability (EasyOCR)
+    ├── subtitle_renderer.py    # Video generation capability
+    ├── whisper_tools.py        # Audio processing capability  
+    └── translate_tools.py      # Language capability (LLM)
 ```
 
 **Key Steps:**
@@ -202,8 +238,3 @@ The current implementation is a single-agent pipeline. Future versions may imple
 - **Parallel Parameter Testing**: Concurrent optimization paths
 - **Advanced Scoring**: Machine learning-based quality assessment
 
-```python
-# Future multi-agent state structure
-class AgentState(TypedDict):
-    messages: Annotated[list[AnyMessage], add_messages]
-```
