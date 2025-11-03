@@ -1,4 +1,5 @@
 # AI Agent: Graph-Based Subtitle Improvement
+## Demo => readme process and agent flow => config.py => run
 
 An intelligent video subtitle optimization system that automatically generates Chinese subtitles and tunes font size and position to match a reference image (`chinese_sample.jpg`) using a graph-based node architecture.
 
