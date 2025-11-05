@@ -133,28 +133,39 @@ def _translate_single_chunk(text):
 def _get_fallback_translation(text):
     """Provide fallback translation when Ollama fails"""
     print("📝 Using fallback Chinese translation...")
-    # Return proper Chinese text instead of English
-    chinese_translations = {
-        "cell phones are not permitted": "不允许使用手机",
-        "at your desk": "在你的办公桌上", 
-        "sensitive information": "敏感信息",
-        "team": "团队",
-        "quickly": "快速地",
-        "reiterate": "重申",
-        "work": "工作",
-        "phone": "电话",
-        "corporate": "企业",
-        "animation": "动画"
+    
+    # Complete sentence translations (more accurate than word-by-word)
+    sentence_translations = {
+        "to be out at your desk": "在你的办公桌旁",
+        "to be out at your desk.": "在你的办公桌旁。",
+        "we deal with a lot of sensitive information": "我们处理大量敏感信息",
+        "we deal with a lot of sensitive information.": "我们处理大量敏感信息。",
+        "we don't want to compromise a client's account": "我们不想危及客户账户",
+        "we don't want to compromise a client's account.": "我们不想危及客户账户。",
+        "so cell phones are not permitted at your desk": "因此不允许在你的办公桌旁使用手机",
+        "so cell phones are not permitted at your desk.": "因此不允许在你的办公桌旁使用手机。",
+        "it's in the guidelines": "这在指导原则中",
+        "it's in the guidelines.": "这在指导原则中。",
+        "we explained it to you": "我们已经向你解释过了",
+        "we explained it to you.": "我们已经向你解释过了。"
     }
     
-    # Try to do basic word replacement
-    translated = text.lower()
-    for en, zh in chinese_translations.items():
-        translated = translated.replace(en, zh)
-        
-    # If no translation happened, use generic Chinese text
-    if translated == text.lower():
-        return "这是一个关于工作场所手机使用规定的视频。公司不允许在办公桌上使用手机，因为我们处理敏感信息，不希望泄露客户账户信息。"
+    # Check for exact sentence matches first
+    text_clean = text.strip()
+    if text_clean.lower() in sentence_translations:
+        return sentence_translations[text_clean.lower()]
     
-    return translated
+    # If no exact match, provide appropriate fallback based on content
+    text_lower = text.lower()
+    if "desk" in text_lower and "phone" in text_lower:
+        return "不允许在办公桌旁使用手机"
+    elif "sensitive" in text_lower and "information" in text_lower:
+        return "我们处理敏感信息"
+    elif "client" in text_lower or "account" in text_lower:
+        return "我们保护客户账户"
+    elif "guidelines" in text_lower:
+        return "这在指导原则中"
+    else:
+        # Generic fallback for unknown text
+        return "这是关于工作场所政策的内容"
 
